@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ShowCode</string>
+    <string name="str_customize_view">题目1:自定义控件</string>
+    <string name="str_load_img">题目2:加载图片</string>
+</resources>
