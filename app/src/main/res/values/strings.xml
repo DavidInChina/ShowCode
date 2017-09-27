@@ -2,4 +2,9 @@
     <string name="app_name">ShowCode</string>
     <string name="str_customize_view">题目1:自定义控件</string>
     <string name="str_load_img">题目2:加载图片</string>
+    <string name="str_permission_success">权限申请成功</string>
+    <string name="str_permission_failed">权限申请失败，请移步系统设置修改权限</string>
+    <string name="str_need_permission">我们需要一些权限来运行应用</string>
+    <string name="str_img_list_show">列表图片展示</string>
+    <string name="str_img">图片</string>
 </resources>

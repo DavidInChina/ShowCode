@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbar_padding_top">0dp</dimen>
+    <dimen name="rx_15">15dp</dimen>
+    <dimen name="rx_4">4dp</dimen>
+    <dimen name="rx_11">11dp</dimen>
+    <dimen name="rx_8">8dp</dimen>
+    <dimen name="rx_2">2dp</dimen>
+</resources>
