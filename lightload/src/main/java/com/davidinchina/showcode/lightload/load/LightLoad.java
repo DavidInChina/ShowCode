@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.davidinchina.showcode.lightload.R;
@@ -41,6 +42,9 @@ public class LightLoad {
     private int defaultView = 0;
     //默认使用单例方式
     public static LightLoad instance;
+
+    private static final int LOAD_SUCCESS = 0;
+    private static final int LOAD_FAILED = 1;
 
     public void setCurrentImage(ImageView currentImage) {
         this.currentImage = currentImage;
@@ -124,6 +128,18 @@ public class LightLoad {
         }
         instance.setCurrentImage(img);
         instance.beginLoad(currentImage, url, defaultView);
+        //设置点击重新加载
+            currentImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int type = (int) view.getTag(R.id.image_type);
+                    String tagUrl = (String) view.getTag(R.id.image_url);
+                    if (type == LOAD_FAILED) {//加载失败的点击可以重新加载
+                        view.setTag(R.id.image_type, LOAD_SUCCESS);
+                        instance.beginLoad((ImageView) view, tagUrl, defaultView);
+                    }
+                }
+            });
     }
 
     /**
@@ -133,7 +149,7 @@ public class LightLoad {
      */
     public void beginLoad(final ImageView imageView, final String url, final int defaultView) {
         final String tagUrl = (String) imageView.getTag(R.id.image_url);//避免加载错乱
-        if (!tagUrl.equals(url)) {
+        if (null == tagUrl || !tagUrl.equals(url)) {
             imageView.setTag(url);
         }
         Observable.create(new Observable.OnSubscribe<Bitmap>() {
@@ -146,7 +162,6 @@ public class LightLoad {
                 } else {
                     subscriber.onError(new Throwable());
                 }
-
             }
         }).subscribeOn(Schedulers.io()) // 切换图片加载至IO线程
                 .observeOn(AndroidSchedulers.mainThread()) //切换图片显示在主线程
@@ -159,6 +174,7 @@ public class LightLoad {
                     @Override
                     public void onNext(Bitmap drawable) {
                         imageView.setImageBitmap(drawable);
+                        imageView.setTag(R.id.image_type, LOAD_SUCCESS);
                     }
 
                     @Override
@@ -191,6 +207,7 @@ public class LightLoad {
                                         Log.e(TAG, "img load failed");
                                         if (0 != defaultView) {
                                             imageView.setImageDrawable(mContext.getDrawable(defaultView));
+                                            imageView.setTag(R.id.image_type, LOAD_FAILED);
                                         }
                                     }
 
@@ -198,8 +215,10 @@ public class LightLoad {
                                     public void onNext(Bitmap arg0) {
                                         if (null != arg0) {
                                             imageView.setImageBitmap(arg0);
+                                            imageView.setTag(R.id.image_type, LOAD_SUCCESS);
                                         } else if (0 != defaultView) {
                                             imageView.setImageDrawable(mContext.getDrawable(defaultView));
+                                            imageView.setTag(R.id.image_type, LOAD_FAILED);
                                         }
                                     }
                                 });

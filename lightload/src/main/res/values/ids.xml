@@ -17,6 +17,6 @@
 <resources>
 
   <item name="image_url" type="id" />
-  <item name="image_value" type="id" />
+  <item name="image_type" type="id" />
 
 </resources>
