@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
             public void call(ViewClickEvent event) {
                 switch (event.view().getId()) {
                     case R.id.btnCustomizeView:
-                        Toast.makeText(mContext, "展示自定义阅读视图", Toast.LENGTH_SHORT).show();
+                        startActivity(ReadingActivity.createIntent(mContext));
                         break;
                     case R.id.btnLoadImg:
                         startActivity(ImgListActivity.createIntent(mContext));

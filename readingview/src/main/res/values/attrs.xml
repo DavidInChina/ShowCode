@@ -15,4 +15,13 @@
         <attr name="lineSpacingExtra" format="dimension" />
         <attr name="typeface" />
     </declare-styleable>
+
+    <declare-styleable name="AlignedTextView">
+        <attr name="atv_marginAndPaddingOfLeftRight" format="dimension"/>
+        <attr name="atv_lineSpacingExtra" format="dimension"/>
+        <attr name="atv_offset" format="dimension"/>
+        <attr name="atv_textSize" format="dimension"/>
+        <attr name="atv_textColor" format="color"/>
+    </declare-styleable>
+
 </resources>
