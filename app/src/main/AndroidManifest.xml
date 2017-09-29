@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".view.ImgListActivity" />
-        <activity android:name=".view.ReadingActivity"></activity>
+        <activity android:name=".view.reading.ReadingActivity"></activity>
     </application>
 
 </manifest>

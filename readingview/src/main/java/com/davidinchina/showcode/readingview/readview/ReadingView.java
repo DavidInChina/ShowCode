@@ -4,18 +4,17 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.davidinchina.showcode.readingview.R;
 
@@ -31,8 +30,13 @@ public class ReadingView extends LinearLayout {
     private int offset = dip2px(0);//偏差值,用作于误差调整
     private int textSize = dip2px(13);//字体大小
     private int textColor = Color.BLACK;// 字体颜色
-
     private LayoutParams layoutParamsMW;
+    private TextView lastView;
+    private WordChooseListener listener;
+
+    public interface WordChooseListener {
+        public void chooseWord(String word);
+    }
 
     public ReadingView(Context context) {
         this(context, null);
@@ -58,13 +62,16 @@ public class ReadingView extends LinearLayout {
 
     private void init() {
         layoutParamsMW = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        setLayoutParams(layoutParamsMW);
         setOrientation(VERTICAL);
         layoutParamsMW.bottomMargin = lineSpacingExtra;
     }
 
     public void setText(int resId) {
         setText(getResources().getString(resId));
+    }
+
+    public void setChooseListener(WordChooseListener listener) {
+        this.listener = listener;
     }
 
     /**
@@ -84,6 +91,7 @@ public class ReadingView extends LinearLayout {
             setPara(para, lineWordNum, remainWidth);
             addEmptyLine();
         }
+
     }
 
     /**
@@ -127,16 +135,16 @@ public class ReadingView extends LinearLayout {
             content = content.substring(0, content.length() - 1);
         }
         TextView lineText = new TextView(getContext());
+        lineText.setMovementMethod(LinkMovementMethod.getInstance());
         lineText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         lineText.setTextColor(textColor);
-        lineText.setText(content);
-        lineText.setLayoutParams(layoutParamsMW);
         if (justify) {
-            justify(lineText, remainWidth);
+            justify(lineText, content, remainWidth);
         } else {//最后一行同样处理点击事件
-            lineText.setMovementMethod(LinkMovementMethod.getInstance());
-            lineText.setText(addClickablePart(content), TextView.BufferType.SPANNABLE);
+            lineText.setText(addClickablePart(content, lineText));
         }
+        lineText.setLayoutParams(layoutParamsMW);
+        avoidHintColor(lineText);
         addView(lineText);
     }
 
@@ -159,14 +167,12 @@ public class ReadingView extends LinearLayout {
      * cerate at 2017/9/29 上午12:14
      * description 单行文本左右对齐
      */
-    public void justify(TextView textView, float contentWidth) {
-        String text = textView.getText().toString();
+    public void justify(TextView textView, String content, float contentWidth) {
         Paint paint = textView.getPaint();
         //需要插入的空格个数
-        int totalSpacesToInsert = (int) ((contentWidth - paint.measureText(text)) / paint.measureText(" "));
-        text = justifyLine(text, totalSpacesToInsert);
-        textView.setMovementMethod(LinkMovementMethod.getInstance());
-        textView.setText(addClickablePart(text), TextView.BufferType.SPANNABLE);
+        int totalSpacesToInsert = (int) ((contentWidth - paint.measureText(content)) / paint.measureText(" "));
+        content = justifyLine(content, totalSpacesToInsert);
+        textView.setText(addClickablePart(content, textView));
     }
 
     //已填入最多单词数的一行，插入对应的空格数直到该行满
@@ -194,35 +200,45 @@ public class ReadingView extends LinearLayout {
      * cerate at 2017/9/29 上午12:36
      * description 单词点击
      */
-    private SpannableStringBuilder addClickablePart(String str) {
-        SpannableStringBuilder ssb = new SpannableStringBuilder();
-        ssb.append(str);
+    private SpannableStringBuilder addClickablePart(String str, final TextView current) {
+        current.setTag(str);//保存数据
+        SpannableStringBuilder ssb = new SpannableStringBuilder(str);
         String[] words = str.split("\\s");
-
         if (words.length > 0) {
             for (int i = 0; i < words.length; i++) {
                 final String word = words[i];
-                Log.e("TAG", word);
                 final int start = str.indexOf(word);
                 ssb.setSpan(new ClickableSpan() {
                     @Override
                     public void onClick(View widget) {
-                        Toast.makeText(getContext(), word,
-                                Toast.LENGTH_SHORT).show();
+                        //清除旧数据状态，添加到新数据
+                        if (null != lastView && lastView != current) {
+                            String content = (String) lastView.getTag();
+                            lastView.setText(addClickablePart(content, lastView));
+
+                        }
+                        lastView = current;
+                        if (null == listener) {
+                            throw new IllegalArgumentException("选择监听器没有初始化");
+                        } else {
+                            listener.chooseWord(word);
+                        }
                     }
 
                     @Override
                     public void updateDrawState(TextPaint ds) {
-                        super.updateDrawState(ds);
-                        ds.setColor(getResources().getColor(R.color.colorPrimary)); // 设置文本颜色
-                        // 去掉下划线
                         ds.setUnderlineText(false);
                     }
 
-                }, start, start + word.length(), 0);
+                }, start, start + word.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
         return ssb;
+    }
+
+    private void avoidHintColor(View view) {
+        if (view instanceof TextView)
+            ((TextView) view).setHighlightColor(getResources().getColor(R.color.chosed));
     }
 
     private int dip2px(int dip) {

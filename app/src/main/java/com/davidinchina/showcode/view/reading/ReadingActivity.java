@@ -1,19 +1,23 @@
-package com.davidinchina.showcode.view;
+package com.davidinchina.showcode.view.reading;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.davidinchina.showcode.R;
 import com.davidinchina.showcode.readingview.readview.ReadingView;
+import com.davidinchina.showcode.readingview.view.SearchWordPopupWindow;
 
 public class ReadingActivity extends Activity {
     private Context mContext;
     private TextView tvTitle;
     private TextView tvBack;
+    private ReadingView atv;
 
     public static Intent createIntent(Context begin) {
         Intent intent = new Intent(begin, ReadingActivity.class);
@@ -35,27 +39,17 @@ public class ReadingActivity extends Activity {
                 finish();
             }
         });
-        ReadingView atv = findViewById(R.id.readView);
+        atv = findViewById(R.id.readView);
         atv.setText(R.string.str_reading_content);
+        atv.setChooseListener(new ReadingView.WordChooseListener() {
+            @Override
+            public void chooseWord(String word) {
+                word = word.replaceAll("[^a-zA-Z]", "");
+                //这里要开始查询
+                Toast.makeText(mContext, word, Toast.LENGTH_SHORT).show();
+                new SearchWordPopupWindow(mContext).showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+            }
+        });
     }
 
-//    public void testClick() {
-//        SpannableStringBuilder spannable = new SpannableStringBuilder("测试 点击 变色");
-//        spannable.setSpan(new ForegroundColorSpan(Color.RED), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        //这个一定要记得设置，不然点击不生效
-//        tvTest.setMovementMethod(LinkMovementMethod.getInstance());
-//        spannable.setSpan(new ClickableSpan() {
-//            @Override
-//            public void onClick(View view) {
-//                Toast.makeText(mContext, "点击", Toast.LENGTH_SHORT).show();
-//            }
-//
-//            @Override
-//            public void updateDrawState(TextPaint ds) {
-//                ds.setColor(Color.GREEN);
-//            }
-//        }, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        tvTest.setText(spannable);
-//
-//    }
 }
