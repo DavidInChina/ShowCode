@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.net;
+package com.davidinchina.showcode.readingview.net;
 
 
 import java.util.concurrent.TimeUnit;
@@ -51,7 +51,7 @@ public class ApiServices {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.shanbay.com")
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create()) //添加Rxjava
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(LocalGsonConverterFactory.create())
                 .client(okHttpBuilder.build())
                 .build();
         return retrofit.create(HttpServerApis.class);

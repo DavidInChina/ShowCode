@@ -7,20 +7,18 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.davidinchina.showcode.R;
-import com.davidinchina.showcode.net.ApiException;
 import com.davidinchina.showcode.readingview.readview.ReadingView;
 import com.davidinchina.showcode.readingview.view.SearchWordPopupWindow;
 
-public class ReadingActivity extends Activity implements ReadingContract.ReadingView {
+public class ReadingActivity extends Activity {
     private Context mContext;
     private TextView tvTitle;
     private TextView tvBack;
     private ReadingView atv;
-    private ReadingPresenter presenter;
     private String token = "";
+    SearchWordPopupWindow popupWindow;
 
     public static Intent createIntent(Context begin, Bundle bundle) {
         Intent intent = new Intent(begin, ReadingActivity.class);
@@ -51,34 +49,37 @@ public class ReadingActivity extends Activity implements ReadingContract.Reading
             public void chooseWord(String word) {
                 word = word.replaceAll("[^a-zA-Z]", "");
                 //这里要开始查询
-                queryWord(word);
+                if (!"".equals(word))
+                    querySingleWord(word);
             }
         });
-        initNet();
     }
 
-    public void initNet() {
-        presenter = new ReadingPresenter();
-        presenter.attachV(this, this);
 
-    }
-
-    public void queryWord(String word) {
-        String url = "https://api.shanbay.com/bdc/search/?word=" + word + "&access_token=" + token;
-        presenter.queryWord(url);
+    public void querySingleWord(String word) {
+        if (null == popupWindow) {
+            popupWindow = new SearchWordPopupWindow(mContext);
+        }
+        if (!popupWindow.isShowing()) {
+            popupWindow.showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+        }
+        popupWindow.queryWord(word, token);
     }
 
     @Override
-    public void showError(Throwable msg) {
-        if (msg instanceof ApiException) {
-            ApiException exception = (ApiException) msg;
-            Toast.makeText(mContext, exception.getErrorMsg(), Toast.LENGTH_SHORT).show();
+    public void onBackPressed() {
+        if (null != popupWindow && popupWindow.isShowing()) {
+            popupWindow.dismiss();
+        } else {
+            finish();
         }
     }
 
     @Override
-    public void queryWord(WordResult result) {
-        Toast.makeText(mContext, "查询成功"+result.getCn_definition().getDefn(), Toast.LENGTH_SHORT).show();
-        new SearchWordPopupWindow(mContext).showAtLocation(getWindow().getDecorView(), Gravity.BOTTOM, 0, 0);
+    protected void onDestroy() {
+        super.onDestroy();
+        if (null != popupWindow) {//释放播放器
+            popupWindow.releasePlayer();
+        }
     }
 }

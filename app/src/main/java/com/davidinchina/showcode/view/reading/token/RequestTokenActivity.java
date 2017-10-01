@@ -11,7 +11,7 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import com.davidinchina.showcode.R;
-import com.davidinchina.showcode.utils.LogUtil;
+import com.davidinchina.showcode.readingview.utils.LogUtil;
 
 public class RequestTokenActivity extends Activity {
     private WebView webView;

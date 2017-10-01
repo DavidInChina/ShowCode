@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.base;
+package com.davidinchina.showcode.readingview.base;
 
 /**
  * 基础数据模型

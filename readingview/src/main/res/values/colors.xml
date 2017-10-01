@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#ff209e85</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="beColor">#fbfbfb</color>
-    <color name="chosed">#cb7f6e</color>
+    <color name="beColor">#f0f0f0</color>
+    <color name="chosed">#ff209e85</color>
+    <color name="textColor">#ff666666</color>
 </resources>

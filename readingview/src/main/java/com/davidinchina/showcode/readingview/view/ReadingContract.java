@@ -1,9 +1,9 @@
-package com.davidinchina.showcode.view.reading;
+package com.davidinchina.showcode.readingview.view;
 
 
-import com.davidinchina.showcode.base.BaseModel;
-import com.davidinchina.showcode.base.BasePresenter;
-import com.davidinchina.showcode.base.BaseView;
+import com.davidinchina.showcode.readingview.base.BaseModel;
+import com.davidinchina.showcode.readingview.base.BasePresenter;
+import com.davidinchina.showcode.readingview.base.BaseView;
 
 import rx.Observable;
 
@@ -26,6 +26,8 @@ public interface ReadingContract {
          * @return
          */
         Observable<WordResult> queryWord(String url);
+
+        Observable<SentenceResult> querySentence(String url);
     }
 
     /**
@@ -40,6 +42,8 @@ public interface ReadingContract {
          * @param result
          */
         void queryWord(WordResult result);
+
+        void querySentence(SentenceResult result);
     }
 
     /**
@@ -50,6 +54,8 @@ public interface ReadingContract {
         /**
          * 控制交互方法示例
          */
-        public abstract void queryWord(String url);
+        public abstract void queryWord(String word, String token);
+
+        public abstract void querySentence(String vocabulary_id, String type, String access_token);
     }
 }

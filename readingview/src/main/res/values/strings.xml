@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">ReadingView</string>
+    <string name="str_close">关闭</string>
+    <string name="str_more">例句</string>
+    <string name="videoplay">videoplay</string>
+    <string name="str_netword_failed">网络交互失败</string>
 </resources>

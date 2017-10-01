@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.utils;
+package com.davidinchina.showcode.readingview.utils;
 
 import android.util.Log;
 

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="rx_25">25dp</dimen>
+    <dimen name="rx_8">8dp</dimen>
+    <dimen name="rx_15">15dp</dimen>
+    <dimen name="rx_200">200dp</dimen>
+    <dimen name="rx_3">3dp</dimen>
 </resources>

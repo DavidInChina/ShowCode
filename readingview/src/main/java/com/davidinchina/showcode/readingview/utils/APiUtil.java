@@ -1,9 +1,9 @@
-package com.davidinchina.showcode.utils;
+package com.davidinchina.showcode.readingview.utils;
 
 
-import com.davidinchina.showcode.net.HttpEmptyResultFunc;
-import com.davidinchina.showcode.net.HttpResultFunc;
-import com.davidinchina.showcode.net.JsonEntity;
+import com.davidinchina.showcode.readingview.net.HttpEmptyResultFunc;
+import com.davidinchina.showcode.readingview.net.HttpResultFunc;
+import com.davidinchina.showcode.readingview.net.JsonEntity;
 
 import rx.Observable;
 import rx.Observable.Transformer;

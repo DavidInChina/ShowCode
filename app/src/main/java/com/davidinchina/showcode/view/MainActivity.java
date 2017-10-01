@@ -52,7 +52,6 @@ public class MainActivity extends Activity {
             @Override
             public void call(ViewClickEvent event) {
                 switch (event.view().getId()) {
-
                     case R.id.btnCustomizeView:
                         if (!"".equals(token)) {
                             Bundle bundle = new Bundle();

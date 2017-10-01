@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.net;
+package com.davidinchina.showcode.readingview.net;
 
 /**
  * 基础响应数据结构模型

@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.net;
+package com.davidinchina.showcode.readingview.net;
 
 
 import rx.functions.Func1;

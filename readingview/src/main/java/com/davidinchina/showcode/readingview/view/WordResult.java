@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.view.reading;
+package com.davidinchina.showcode.readingview.view;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import java.util.List;
  * author:davidinchina on 2017/9/30 18:12
  * email:davicdinchina@gmail.com
  * version:1.0.0
- * des:
+ * des:单词查询结果
  */
 public class WordResult {
 

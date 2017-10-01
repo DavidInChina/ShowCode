@@ -1,8 +1,8 @@
-package com.davidinchina.showcode.view.reading;
+package com.davidinchina.showcode.readingview.view;
 
 
-import com.davidinchina.showcode.net.ApiServices;
-import com.davidinchina.showcode.utils.APiUtil;
+import com.davidinchina.showcode.readingview.net.ApiServices;
+import com.davidinchina.showcode.readingview.utils.APiUtil;
 
 import rx.Observable;
 
@@ -24,5 +24,14 @@ public class ReadingModel implements ReadingContract.ReadingModel {
                 .compose((Observable.Transformer)
                         APiUtil.<WordResult>handleResult())
                 .compose(APiUtil.<WordResult>rxSchedulerHelper());
+    }
+
+    @Override
+    public Observable<SentenceResult> querySentence(String url) {
+        return ApiServices.createApi()
+                .queryWordSentence(url)
+                .compose((Observable.Transformer)
+                        APiUtil.<SentenceResult>handleResult())
+                .compose(APiUtil.<SentenceResult>rxSchedulerHelper());
     }
 }

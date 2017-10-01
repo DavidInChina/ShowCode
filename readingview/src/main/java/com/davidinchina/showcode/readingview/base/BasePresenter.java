@@ -1,8 +1,8 @@
-package com.davidinchina.showcode.base;
+package com.davidinchina.showcode.readingview.base;
 
 import android.content.Context;
 
-import com.davidinchina.showcode.net.RxManager;
+import com.davidinchina.showcode.readingview.net.RxManager;
 
 
 /**

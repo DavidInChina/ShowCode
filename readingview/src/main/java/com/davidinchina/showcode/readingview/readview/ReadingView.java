@@ -8,16 +8,20 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.davidinchina.showcode.readingview.R;
+import com.davidinchina.showcode.readingview.utils.LogUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * author:davidinchina on 2017/9/27 23:57
@@ -39,6 +43,12 @@ public class ReadingView extends LinearLayout {
     private int remainHeight = 0;//高度
     private int lineWordNum = 0;//行数
     private int columnWordNum = 0;//列数
+    private int mLastXIntercept = 0;//拦截x坐标
+    private int mLastXTouch = 0;//触摸x坐标
+    private int page = 1;//当前页，默认第一页
+    private int maxPage = 0;//最大页
+    private Map<Integer, Integer> pageCount = new HashMap<>();//键值对记录每一页的起始下标
+    private String content = "";
 
     public interface WordChooseListener {
         public void chooseWord(String word);
@@ -67,12 +77,80 @@ public class ReadingView extends LinearLayout {
         init();
     }
 
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/1 下午5:05
+     * description 初始化参数
+     */
     private void init() {
         layoutParamsMW = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         setOrientation(VERTICAL);
         layoutParamsMW.bottomMargin = lineSpacingExtra;
     }
 
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        boolean intercepted = false;
+        int x = (int) event.getX();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_MOVE:
+                int deltaX = x - mLastXIntercept;
+                if (Math.abs(deltaX) > 50) {//横向滑动超过50px，则拦截
+                    intercepted = true;
+                    page = deltaX > 0 ? page - 1 : page + 1;
+                } else {
+                    intercepted = false;
+                }
+                break;
+        }
+        mLastXIntercept = x;
+        return intercepted;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int x = (int) event.getX();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mLastXTouch = x;
+                break;
+            case MotionEvent.ACTION_UP:
+                int deltaX = x - mLastXTouch;
+                if (Math.abs(deltaX) > 50) {//横向滑动超过50px，则拦截
+                    page = deltaX > 0 ? page - 1 : page + 1;
+                    if (null != lastView) {//恢复被touchDown事件改变状态的textview
+                        String content = (String) lastView.getTag();
+                        lastView.setText(addClickablePart(content, lastView));
+                    }
+                    LogUtil.debug("消费：" + page);
+                    if (page == 0) {
+                        page = 1;//不再翻页
+                    } else if (page == maxPage + 1) {
+                        page = maxPage;
+                    } else {
+                        clipPage();
+                    }
+                }
+                break;
+        }
+        return true;
+    }
+
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/2 上午12:23
+     * description 翻页操作
+     */
+    public void clipPage() {
+        if (page > 0 && page <= maxPage)
+            showContent(page);
+    }
+
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/1 下午5:05
+     * description 设置文本内容用来显示
+     */
     public void setText(int resId) {
         setText(getResources().getString(resId));
     }
@@ -87,21 +165,120 @@ public class ReadingView extends LinearLayout {
      * description 设置所有数据到页面
      */
     public void setText(String content) {
+        this.content = content;
         int usedWidth = marginAndPaddingOfLeftRight + offset;//已使用宽度
         remainWidth = getContext().getResources().getDisplayMetrics().widthPixels - usedWidth;//可放置宽度
-        remainHeight = getContext().getResources().getDisplayMetrics().heightPixels - marginAndPaddingOfTopDown;
-        Log.e("TAG", remainHeight + "剩余高度");
-        lineWordNum = remainWidth / (textSize / 2);//大致的行数，还有空格造成的空隙，暂时用空格填充解决
-        columnWordNum = remainHeight / (textSize / 2);//每一页的列数
+        remainHeight = getContext().getResources().getDisplayMetrics().heightPixels - marginAndPaddingOfTopDown - lineSpacingExtra;
+        Log.e("TAG", remainHeight + "剩余高度,字体高度" + (textSize / 2));
+        lineWordNum = remainWidth / (textSize / 2);//大致的列数，还有空格造成的空隙，暂时用空格填充解决
+        columnWordNum = remainHeight / (textSize + lineSpacingExtra);//每一页的行数
+        LogUtil.d("每一页行数：" + columnWordNum);
         if (lineWordNum <= 0) {
             return;
         }
+        countText();
+        LogUtil.error("最大页数：" + maxPage);
+        showContent(page);
+    }
+
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/2 上午12:34
+     * description 计算一共有多少页以及每一页的起始下标
+     */
+    public void countText() {
+        if (TextUtils.isEmpty(content)) {
+            return;
+        }
+        int column = 0;
         String[] paraArray = content.split("\\n+");//段落分开
         for (String para : paraArray) {
-            setPara(para, lineWordNum, remainWidth);
+            column = column + countPara(para);
+            column++;//空行
+        }
+        LogUtil.debug("所有行数：" + column);
+        maxPage = column / columnWordNum + (column % columnWordNum > 0 ? 1 : 0);//总行数除以每页行数，得到页数
+        int currentIndex = 0;
+        for (int i = 0; i < maxPage; i++) {
+            pageCount.put(i + 1, currentIndex);
+            LogUtil.debug("第" + (i + 1) + "页：" + currentIndex);
+            currentIndex = getNextIndex(content, currentIndex);
+            if (currentIndex == content.length()) {//已经到最后
+                break;
+            }
+        }
+        maxPage = pageCount.size();//更正总页数，防止误差产生
+    }
+
+    public int getNextIndex(String content, int beginIndex) {
+        if (TextUtils.isEmpty(content)) {
+            return -1;
+        }
+        content = content.trim().substring(beginIndex);
+        int contentLength = content.length();
+        int index = 0;//计算下标
+        int column = 0;//当前行数
+        while (index < contentLength && column < columnWordNum) {
+            if (contentLength - index <= lineWordNum) {//半行,没有下一页
+                return contentLength;
+            }
+            String lineContent = content.substring(index, index + lineWordNum);
+            String next = content.substring(index + lineWordNum, index + lineWordNum + 1);
+            if (!next.equals(" ") && !lineContent.endsWith(" ")) {//下一行非空格开始,此一行非空格结束，则单词中断
+                lineContent = lineContent.substring(0, lineContent.lastIndexOf(" ") + 1);//截取最后一个空格之前
+            }
+            index = index + lineContent.length();//更新下标
+            column++;
+        }
+        return index + beginIndex + 1;//返回当前页之后下标+1
+    }
+
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/2 上午12:57
+     * description 统计某段行数
+     */
+    public int countPara(String content) {
+        int result = 0;
+        if (TextUtils.isEmpty(content)) {
+            return result;
+        }
+        content = content.trim();
+        int contentLength = content.length();
+        int index = 0;//计算下标
+        while (index < contentLength) {
+            if (contentLength - index <= lineWordNum) {//半行
+                result++;
+                return result;
+            }
+            String lineContent = content.substring(index, index + lineWordNum);
+            String next = content.substring(index + lineWordNum, index + lineWordNum + 1);
+            if (!next.equals(" ") && !lineContent.endsWith(" ")) {//下一行非空格开始,此一行非空格结束，则单词中断
+                lineContent = lineContent.substring(0, lineContent.lastIndexOf(" ") + 1);//截取最后一个空格之前
+            }
+            index = index + lineContent.length();//更新下标
+            result++;//一行
+        }
+        return result;
+    }
+
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/2 上午12:54
+     * description 显示某一页的内容到页面
+     */
+    public void showContent(int page) {
+        removeAllViews();//清空已有数据
+        int end = content.length();
+        if (pageCount.containsKey(page + 1)) {
+            end = pageCount.get(page + 1);
+        }
+        String currentPageContent = content.substring(pageCount.get(page), end);
+        String[] paraArray = currentPageContent.split("\\n+");//段落分开
+        for (String para : paraArray) {
+            setPara(para);//设置每一行内容
             addEmptyLine();
         }
-
     }
 
     /**
@@ -109,7 +286,7 @@ public class ReadingView extends LinearLayout {
      * cerate at 2017/9/29 上午12:00
      * description 处理每一个段落
      */
-    public void setPara(String content, int lineWordNum, int remainWidth) {
+    public void setPara(String content) {
         if (TextUtils.isEmpty(content)) {
             return;
         }
@@ -145,7 +322,7 @@ public class ReadingView extends LinearLayout {
             content = content.substring(0, content.length() - 1);
         }
         TextView lineText = new TextView(getContext());
-        lineText.setMovementMethod(LinkMovementMethod.getInstance());
+        lineText.setMovementMethod(ClickableMovementMethod.getInstance());
         lineText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         lineText.setTextColor(textColor);
         if (justify) {
@@ -221,11 +398,11 @@ public class ReadingView extends LinearLayout {
                 ssb.setSpan(new ClickableSpan() {
                     @Override
                     public void onClick(View widget) {
+                        LogUtil.error(word);
                         //清除旧数据状态，添加到新数据
                         if (null != lastView && lastView != current) {
                             String content = (String) lastView.getTag();
                             lastView.setText(addClickablePart(content, lastView));
-
                         }
                         lastView = current;
                         if (null == listener) {

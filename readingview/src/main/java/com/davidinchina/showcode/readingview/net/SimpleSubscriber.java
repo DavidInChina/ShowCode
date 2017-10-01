@@ -1,7 +1,7 @@
-package com.davidinchina.showcode.net;
+package com.davidinchina.showcode.readingview.net;
 
 
-import com.davidinchina.showcode.utils.LogUtil;
+import com.davidinchina.showcode.readingview.utils.LogUtil;
 
 import rx.Subscriber;
 

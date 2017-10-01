@@ -1,6 +1,8 @@
-package com.davidinchina.showcode.net;
+package com.davidinchina.showcode.readingview.net;
 
-import com.davidinchina.showcode.view.reading.WordResult;
+
+import com.davidinchina.showcode.readingview.view.SentenceResult;
+import com.davidinchina.showcode.readingview.view.WordResult;
 
 import retrofit2.http.GET;
 import retrofit2.http.Url;
@@ -17,4 +19,7 @@ public interface HttpServerApis {
 
     @GET
     Observable<JsonEntity<WordResult>> queryWord(@Url String url);
+
+    @GET
+    Observable<JsonEntity<SentenceResult>> queryWordSentence(@Url String url);
 }
