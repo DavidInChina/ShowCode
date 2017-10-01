@@ -27,7 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".view.ImgListActivity" />
-        <activity android:name=".view.reading.ReadingActivity"></activity>
+        <activity android:name=".view.reading.ReadingActivity" />
+        <activity android:name=".view.reading.token.RequestTokenActivity" />
     </application>
 
 </manifest>

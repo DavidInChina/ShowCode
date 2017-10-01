@@ -58,4 +58,6 @@
         transparent
         and competitive procedures.\n
     </string>
+    <string name="str_get_token">扇贝鉴权</string>
+    <string name="str_get_token_success">扇贝鉴权成功</string>
 </resources>

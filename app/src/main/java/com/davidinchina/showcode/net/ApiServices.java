@@ -1,4 +1,4 @@
-package com.davidinchina.showcode.lightload.api;
+package com.davidinchina.showcode.net;
 
 
 import java.util.concurrent.TimeUnit;
@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 * cerate at 2017/9/27 下午4:48
 * description 网络请求api
 */
-public class ApiService {
+public class ApiServices {
     //读取新连接超时时间
     private static final int TIMEOUT_READ = 20;
     //请求超时时间超时时间
@@ -46,7 +46,7 @@ public class ApiService {
      *
      * @return
      */
-    public static HttpServerApi createApi() {
+    public static HttpServerApis createApi() {
         okHttpBuilder.addInterceptor(interceptor);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.shanbay.com")
@@ -54,7 +54,7 @@ public class ApiService {
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpBuilder.build())
                 .build();
-        return retrofit.create(HttpServerApi.class);
+        return retrofit.create(HttpServerApis.class);
     }
 
 }

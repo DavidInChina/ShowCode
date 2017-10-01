@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -26,6 +27,7 @@ import com.davidinchina.showcode.readingview.R;
  */
 public class ReadingView extends LinearLayout {
     private int marginAndPaddingOfLeftRight = dip2px(20);//文本域左右已使用的间距值
+    private int marginAndPaddingOfTopDown = dip2px(40);//文本域上下已使用间距
     private int lineSpacingExtra = dip2px(5);//文本行距
     private int offset = dip2px(0);//偏差值,用作于误差调整
     private int textSize = dip2px(13);//字体大小
@@ -33,6 +35,10 @@ public class ReadingView extends LinearLayout {
     private LayoutParams layoutParamsMW;
     private TextView lastView;
     private WordChooseListener listener;
+    private int remainWidth = 0;//宽度
+    private int remainHeight = 0;//高度
+    private int lineWordNum = 0;//行数
+    private int columnWordNum = 0;//列数
 
     public interface WordChooseListener {
         public void chooseWord(String word);
@@ -51,6 +57,7 @@ public class ReadingView extends LinearLayout {
         if (attrs != null) {
             TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.AlignedTextView);
             marginAndPaddingOfLeftRight = ta.getDimensionPixelSize(R.styleable.AlignedTextView_atv_marginAndPaddingOfLeftRight, marginAndPaddingOfLeftRight);
+            marginAndPaddingOfTopDown = ta.getDimensionPixelOffset(R.styleable.AlignedTextView_atv_marginAndPaddingOfTopDown, marginAndPaddingOfTopDown);
             lineSpacingExtra = ta.getDimensionPixelSize(R.styleable.AlignedTextView_atv_lineSpacingExtra, lineSpacingExtra);
             offset = ta.getDimensionPixelSize(R.styleable.AlignedTextView_atv_offset, offset);
             textSize = ta.getDimensionPixelSize(R.styleable.AlignedTextView_atv_textSize, textSize);
@@ -81,8 +88,11 @@ public class ReadingView extends LinearLayout {
      */
     public void setText(String content) {
         int usedWidth = marginAndPaddingOfLeftRight + offset;//已使用宽度
-        int remainWidth = getContext().getResources().getDisplayMetrics().widthPixels - usedWidth;//可放置宽度
-        int lineWordNum = remainWidth / (textSize / 2);//大致的行数，还有空格造成的空隙，暂时用空格填充解决
+        remainWidth = getContext().getResources().getDisplayMetrics().widthPixels - usedWidth;//可放置宽度
+        remainHeight = getContext().getResources().getDisplayMetrics().heightPixels - marginAndPaddingOfTopDown;
+        Log.e("TAG", remainHeight + "剩余高度");
+        lineWordNum = remainWidth / (textSize / 2);//大致的行数，还有空格造成的空隙，暂时用空格填充解决
+        columnWordNum = remainHeight / (textSize / 2);//每一页的列数
         if (lineWordNum <= 0) {
             return;
         }
