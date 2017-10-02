@@ -5,6 +5,7 @@ import android.app.Application;
 import com.davidinchina.showcode.R;
 import com.davidinchina.showcode.lightload.load.LightLoad;
 import com.davidinchina.showcode.lightload.load.LoadingSetting;
+import com.pgyersdk.crash.PgyCrashManager;
 
 /**
  * author:davidinchina on 2017/9/27 00:00
@@ -17,6 +18,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         //初始化某些数据
+        PgyCrashManager.register(this);//蒲公英crash上报
         LoadingSetting loadingSetting = new LoadingSetting();
         loadingSetting.setApp(this).setCacheRoot("Images").
                 setCacheSize(20 * 1024 * 1024). setLoadWay(LoadingSetting.DISK_CACHE)

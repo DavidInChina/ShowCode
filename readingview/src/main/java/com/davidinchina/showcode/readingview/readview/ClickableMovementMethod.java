@@ -9,8 +9,6 @@ import android.text.style.ClickableSpan;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
-import com.davidinchina.showcode.readingview.utils.LogUtil;
-
 /**
  * author:davidinchina on 2017/10/1 20:20
  * email:davicdinchina@gmail.com
@@ -20,8 +18,8 @@ import com.davidinchina.showcode.readingview.utils.LogUtil;
 public class ClickableMovementMethod extends BaseMovementMethod {
 
     private static ClickableMovementMethod sInstance;
-    private int lastbegin = 0;
-    private int lastEnd = 0;
+    private int downX = 0;
+    private int downY = 0;
 
     public static ClickableMovementMethod getInstance() {
         if (sInstance == null) {
@@ -33,46 +31,56 @@ public class ClickableMovementMethod extends BaseMovementMethod {
     @Override
     public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
         int action = event.getActionMasked();
-//        switch (action) {
-//            case MotionEvent.ACTION_UP:
-//                break;
-//            case MotionEvent.ACTION_DOWN:
-//                break;
-//        }
-        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-            x -= widget.getTotalPaddingLeft();
-            y -= widget.getTotalPaddingTop();
-            x += widget.getScrollX();
-            y += widget.getScrollY();
-            Layout layout = widget.getLayout();
-            int line = layout.getLineForVertical(y);
-            int off = layout.getOffsetForHorizontal(line, x);
-            ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
-            if (link.length != 0) {
-                if (action == MotionEvent.ACTION_UP) {
-                    LogUtil.debug("up:" + lastbegin + "///" + lastEnd + buffer.toString());
-                    if (lastEnd != 0) {
-//                        LocalSelection.setSelection(buffer, lastbegin,
-//                                lastEnd);//弹起才会触发Selection背景色改变
-                        lastbegin = 0;
-                        lastEnd = 0;
+        int x = (int) event.getX();
+        int y = (int) event.getY();
+        switch (action) {
+            case MotionEvent.ACTION_UP:
+                if (Math.abs(downX - x) < 20 && Math.abs(downY - y) < 20) {
+                    //down和up点在一定范围内，判断是点击
+                    x -= widget.getTotalPaddingLeft();
+                    y -= widget.getTotalPaddingTop();
+                    x += widget.getScrollX();
+                    y += widget.getScrollY();
+                    Layout layout = widget.getLayout();
+                    int line = layout.getLineForVertical(y);
+                    int off = layout.getOffsetForHorizontal(line, x);
+                    ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
+                    if (link.length != 0) {
+                        Selection.setSelection(buffer,
+                                buffer.getSpanStart(link[0]),
+                                buffer.getSpanEnd(link[0]));
+                        link[0].onClick(widget);
+                        return true;
+                    } else {
+                        Selection.removeSelection(buffer);
                     }
-                    link[0].onClick(widget);
-                } else if (action == MotionEvent.ACTION_DOWN) {
-                    LogUtil.debug("Action:" + action + "///");
+                }
+                break;
+            case MotionEvent.ACTION_DOWN:
+                downX = x;
+                downY = y;
+                x -= widget.getTotalPaddingLeft();
+                y -= widget.getTotalPaddingTop();
+                x += widget.getScrollX();
+                y += widget.getScrollY();
+                Layout layout = widget.getLayout();
+                int line = layout.getLineForVertical(y);
+                int off = layout.getOffsetForHorizontal(line, x);
+                ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
+                if (link.length != 0) {
                     Selection.setSelection(buffer,
                             buffer.getSpanStart(link[0]),
                             buffer.getSpanEnd(link[0]));
-                    LogUtil.debug("down:" + lastbegin + "///" + lastEnd);
+                    return false;
+                } else {
+                    Selection.removeSelection(buffer);
                 }
-                return true;
-            } else {
+                break;
+            case MotionEvent.ACTION_MOVE:
                 Selection.removeSelection(buffer);
-            }
+                break;
         }
-        return super.onTouchEvent(widget, buffer, event);
+        return false;
     }
 
 }

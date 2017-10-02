@@ -3,6 +3,8 @@ package com.davidinchina.showcode.view;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -13,6 +15,8 @@ import com.davidinchina.showcode.view.reading.ReadingActivity;
 import com.davidinchina.showcode.view.reading.token.RequestTokenActivity;
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.view.ViewClickEvent;
+import com.pgyersdk.crash.PgyCrashManager;
+import com.pgyersdk.update.PgyUpdateManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +30,7 @@ public class MainActivity extends Activity {
     private Button btnLoadImg;
     private Context mContext;
     private TextView tvTitle;
+    private TextView tvVersion;
     private static final int REQUEST_CODE = 100;//请求权限code
     private static final int REQUEST_TOKEN_CODE = 100;//请求token code
     private String token = "";//扇贝会话token
@@ -47,6 +52,8 @@ public class MainActivity extends Activity {
         btnCustomizeView = findViewById(R.id.btnCustomizeView);
         btnLoadImg = findViewById(R.id.btnLoadImg);
         tvTitle = findViewById(R.id.tvActionTitle);
+        tvVersion = findViewById(R.id.tvVersion);
+        tvVersion.setText(getString(R.string.str_current_version) + getAppVersionName());
         tvTitle.setText(R.string.app_name);
         Action1<ViewClickEvent> clickAction = new Action1<ViewClickEvent>() {
             @Override
@@ -77,6 +84,23 @@ public class MainActivity extends Activity {
                 .throttleFirst(500, TimeUnit.MILLISECONDS)
                 .subscribe(clickAction);
         requestPermission();
+        checkVersion();
+    }
+
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/2 下午5:56
+     * description 蒲公英检查版本更新
+     */
+    public void checkVersion() {
+        PgyUpdateManager.setIsForced(false); //设置是否强制更新。true为强制更新；false为不强制更新（默认值）。
+        PgyUpdateManager.register(this, "com.davidinchina.showcode.fileProvider");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PgyUpdateManager.unregister();//蒲公英解除注册
     }
 
     public void requestPermission() {
@@ -110,5 +134,21 @@ public class MainActivity extends Activity {
                     Toast.makeText(this, R.string.str_get_token_success, Toast.LENGTH_SHORT).show();
                     break;
             }
+    }
+
+    public String getAppVersionName() {
+        String versionName = "";
+        try {
+            // ---get the package info---
+            PackageManager pm = getPackageManager();
+            PackageInfo pi = pm.getPackageInfo(getPackageName(), 0);
+            versionName = pi.versionName;
+            if (versionName == null || versionName.length() <= 0) {
+                return "";
+            }
+        } catch (Exception e) {
+            PgyCrashManager.reportCaughtException(MainActivity.this, e);
+        }
+        return versionName;
     }
 }

@@ -24,4 +24,13 @@
         android:layout_marginTop="@dimen/rx_8"
         android:text="@string/str_load_img" />
 
+    <TextView
+        android:id="@+id/tvVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/rx_8"
+        android:layout_marginLeft="@dimen/rx_8"
+        android:layout_marginRight="@dimen/rx_8"
+        android:layout_marginTop="@dimen/rx_25"
+        android:text="" />
 </LinearLayout>

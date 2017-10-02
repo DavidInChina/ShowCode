@@ -11,12 +11,14 @@ import android.widget.TextView;
 import com.davidinchina.showcode.R;
 import com.davidinchina.showcode.readingview.readview.ReadingView;
 import com.davidinchina.showcode.readingview.view.SearchWordPopupWindow;
+import com.pgyersdk.crash.PgyCrashManager;
 
 public class ReadingActivity extends Activity {
     private Context mContext;
     private TextView tvTitle;
     private TextView tvBack;
-    private ReadingView atv;
+    private TextView tvNext;
+    private ReadingView readingView;
     private String token = "";
     SearchWordPopupWindow popupWindow;
 
@@ -36,15 +38,16 @@ public class ReadingActivity extends Activity {
         tvTitle.setText(R.string.str_reading_view);
         tvBack = findViewById(R.id.tvActionLeft);
         tvBack.setVisibility(View.VISIBLE);
+        tvNext = findViewById(R.id.tvActionRight);
+        tvNext.setVisibility(View.VISIBLE);
         tvBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 finish();
             }
         });
-        atv = findViewById(R.id.readView);
-        atv.setText(R.string.str_reading_content);
-        atv.setChooseListener(new ReadingView.WordChooseListener() {
+        readingView = findViewById(R.id.readView);
+        readingView.setChooseListener(new ReadingView.WordChooseListener() {
             @Override
             public void chooseWord(String word) {
                 word = word.replaceAll("[^a-zA-Z]", "");
@@ -53,9 +56,24 @@ public class ReadingActivity extends Activity {
                     querySingleWord(word);
             }
         });
+        readingView.setPageChangeListener(new ReadingView.PageChangeListener() {
+            @Override
+            public void choosePage(int page, int maxPage) {
+                tvNext.setText(page + "/" + maxPage + getString(R.string.str_page));
+            }
+        });
+        try {
+            readingView.setText(R.string.str_reading_content);
+        } catch (Exception e) {
+            PgyCrashManager.reportCaughtException(ReadingActivity.this, e);
+        }
     }
 
-
+    /**
+     * @author davidinchina
+     * cerate at 2017/10/2 下午12:21
+     * description 查词框查询单个单词
+     */
     public void querySingleWord(String word) {
         if (null == popupWindow) {
             popupWindow = new SearchWordPopupWindow(mContext);

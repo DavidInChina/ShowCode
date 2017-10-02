@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.davidinchina.showcode.R;
 import com.davidinchina.showcode.view.adapter.ImgAdapter;
+import com.pgyersdk.crash.PgyCrashManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,12 @@ public class ImgListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_img_list);
         initView();
-        initData();
+        try  {
+            initData();
+        } catch (Exception e) {
+            PgyCrashManager.reportCaughtException(ImgListActivity.this, e);
+        }
+
     }
 
 

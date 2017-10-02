@@ -60,4 +60,7 @@
     </string>
     <string name="str_get_token">扇贝鉴权</string>
     <string name="str_get_token_success">扇贝鉴权成功</string>
+    <string name="str_back">返回</string>
+    <string name="str_page">页</string>
+    <string name="str_current_version">当前版本：</string>
 </resources>
