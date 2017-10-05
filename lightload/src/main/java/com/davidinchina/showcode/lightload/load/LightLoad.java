@@ -3,7 +3,6 @@ package com.davidinchina.showcode.lightload.load;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -128,18 +127,19 @@ public class LightLoad {
         }
         instance.setCurrentImage(img);
         instance.beginLoad(currentImage, url, defaultView);
+        currentImage.setTag(R.id.image_type, LOAD_FAILED);
         //设置点击重新加载
-            currentImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int type = (int) view.getTag(R.id.image_type);
-                    String tagUrl = (String) view.getTag(R.id.image_url);
-                    if (type == LOAD_FAILED) {//加载失败的点击可以重新加载
-                        view.setTag(R.id.image_type, LOAD_SUCCESS);
-                        instance.beginLoad((ImageView) view, tagUrl, defaultView);
-                    }
+        currentImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int type = (int) view.getTag(R.id.image_type);
+                String tagUrl = (String) view.getTag(R.id.image_url);
+                if (type == LOAD_FAILED) {//加载失败的点击可以重新加载
+                    view.setTag(R.id.image_type, LOAD_SUCCESS);
+                    instance.beginLoad((ImageView) view, tagUrl, defaultView);
                 }
-            });
+            }
+        });
     }
 
     /**
@@ -155,7 +155,7 @@ public class LightLoad {
         Observable.create(new Observable.OnSubscribe<Bitmap>() {
             @Override
             public void call(final Subscriber<? super Bitmap> subscriber) {
-                final Bitmap bitmap = loadType.getImg(url);//获取磁盘缓存
+                final Bitmap bitmap = loadType.getImg(url);//获取缓存
                 if (null != bitmap) {
                     subscriber.onNext(bitmap);
                     subscriber.onCompleted();
@@ -204,7 +204,6 @@ public class LightLoad {
 
                                     @Override
                                     public void onError(Throwable arg0) {
-                                        Log.e(TAG, "img load failed");
                                         if (0 != defaultView) {
                                             imageView.setImageDrawable(mContext.getDrawable(defaultView));
                                             imageView.setTag(R.id.image_type, LOAD_FAILED);

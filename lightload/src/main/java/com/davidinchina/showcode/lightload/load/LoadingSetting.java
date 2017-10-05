@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.davidinchina.showcode.lightload.loadtype.DiskCache;
 import com.davidinchina.showcode.lightload.loadtype.LoadType;
+import com.davidinchina.showcode.lightload.loadtype.MemoryCache;
 
 /**
  * author:davidinchina on 2017/9/27 00:43
@@ -44,6 +45,13 @@ public class LoadingSetting {
                 throw new IllegalArgumentException("params must have been seted");
             }
             this.loadType = DiskCache.getInstance(app, cacheRoot, cacheSize);
+        } else if (loadWay == MEMORY_CACHE) {
+            if (0 == cacheSize) {
+                throw new IllegalArgumentException("params must have been seted");
+            }
+            this.loadType = MemoryCache.getInstance(cacheSize);
+        } else {
+            throw new IllegalArgumentException("illegal load type");
         }
         return this;
     }

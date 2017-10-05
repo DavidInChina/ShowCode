@@ -21,8 +21,11 @@ public class App extends Application {
         PgyCrashManager.register(this);//蒲公英crash上报
         LoadingSetting loadingSetting = new LoadingSetting();
         loadingSetting.setApp(this).setCacheRoot("Images").
-                setCacheSize(20 * 1024 * 1024). setLoadWay(LoadingSetting.DISK_CACHE)
+                setCacheSize(20 * 1024 * 1024).setLoadWay(LoadingSetting.DISK_CACHE)
                 .setDefaultRes(R.mipmap.icon_default);
+//        loadingSetting
+//                .setCacheSize(20 * 1024 * 1024).setLoadWay(LoadingSetting.MEMORY_CACHE)
+//                .setDefaultRes(R.mipmap.icon_default);
         LightLoad.initInstance(loadingSetting);//初始化图片加载库
     }
 
