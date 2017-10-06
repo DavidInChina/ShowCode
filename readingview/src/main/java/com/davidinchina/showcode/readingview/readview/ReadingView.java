@@ -109,7 +109,7 @@ public class ReadingView extends LinearLayout {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_MOVE:
                 int deltaX = x - mLastXIntercept;
-                if (Math.abs(deltaX) > 50) {//横向滑动超过50px，则拦截
+                if (Math.abs(deltaX) > 20) {//横向滑动超过50px，则拦截
                     intercepted = true;
                     setPage(deltaX);
                 } else {

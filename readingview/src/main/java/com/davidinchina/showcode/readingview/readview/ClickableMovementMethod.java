@@ -33,9 +33,11 @@ public class ClickableMovementMethod extends BaseMovementMethod {
         int action = event.getActionMasked();
         int x = (int) event.getX();
         int y = (int) event.getY();
+        int deltaX = x - downX;
+        int deltaY = y - downY;
         switch (action) {
             case MotionEvent.ACTION_UP:
-                if (Math.abs(downX - x) < 20 && Math.abs(downY - y) < 20) {
+                if (Math.abs(deltaX) < 20 && Math.abs(deltaY) < 20) {
                     //down和up点在一定范围内，判断是点击
                     x -= widget.getTotalPaddingLeft();
                     y -= widget.getTotalPaddingTop();
@@ -46,19 +48,16 @@ public class ClickableMovementMethod extends BaseMovementMethod {
                     int off = layout.getOffsetForHorizontal(line, x);
                     ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
                     if (link.length != 0) {
-                        Selection.setSelection(buffer,
-                                buffer.getSpanStart(link[0]),
-                                buffer.getSpanEnd(link[0]));
                         link[0].onClick(widget);
                         return true;
                     } else {
                         Selection.removeSelection(buffer);
                     }
+                } else {
+                    Selection.removeSelection(buffer);
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
-                downX = x;
-                downY = y;
                 x -= widget.getTotalPaddingLeft();
                 y -= widget.getTotalPaddingTop();
                 x += widget.getScrollX();
@@ -71,13 +70,16 @@ public class ClickableMovementMethod extends BaseMovementMethod {
                     Selection.setSelection(buffer,
                             buffer.getSpanStart(link[0]),
                             buffer.getSpanEnd(link[0]));
-                    return false;
                 } else {
                     Selection.removeSelection(buffer);
                 }
+                downX = x;
+                downY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Selection.removeSelection(buffer);
+                if (Math.abs(deltaX) > 20 || Math.abs(deltaY) > 20) {//距离横向或者纵向超过50，则视为滑动
+                    Selection.removeSelection(buffer);
+                }
                 break;
         }
         return false;
