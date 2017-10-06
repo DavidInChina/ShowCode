@@ -5,8 +5,6 @@ import android.text.NoCopySpan;
 import android.text.Spannable;
 import android.text.Spanned;
 
-import com.davidinchina.showcode.readingview.utils.LogUtil;
-
 import java.text.BreakIterator;
 
 /**
@@ -63,7 +61,6 @@ public class LocalSelection {
 
         int ostart = getSelectionStart(text);
         int oend = getSelectionEnd(text);
-        LogUtil.error(ostart + "///" + oend + "////" + start + "/////" + stop);
         if (ostart != start || oend != stop) {//这一步放置重复点击
             text.setSpan(SELECTION_START, start, start,
                     Spanned.SPAN_POINT_POINT | Spanned.SPAN_INTERMEDIATE);

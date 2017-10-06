@@ -7,15 +7,16 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.davidinchina.showcode.readingview.R;
 
@@ -36,7 +37,7 @@ public class ReadingView extends LinearLayout {
     private int textSize = sp2px(16);//字体大小
     private int textColor = Color.BLACK;// 字体颜色
     private LayoutParams layoutParamsMW;
-    private TextView lastView;
+    private LocalTextView lastView;
     private WordChooseListener listener;
     private PageChangeListener pageChangeListener;
     private int remainWidth = 0;//宽度
@@ -105,11 +106,11 @@ public class ReadingView extends LinearLayout {
     public boolean onInterceptTouchEvent(MotionEvent event) {
         intercepted = false;
         int x = (int) event.getX();
+        int deltaX = x - mLastXIntercept;
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_MOVE:
-                int deltaX = x - mLastXIntercept;
-                if (Math.abs(deltaX) > 20) {//横向滑动超过50px，则拦截
+                if (Math.abs(deltaX) > 20) {//横向滑动超过20px，则拦截
                     intercepted = true;
                     setPage(deltaX);
                 } else {
@@ -152,7 +153,7 @@ public class ReadingView extends LinearLayout {
                     }
                     if (null != lastView) {//恢复被touchDown事件改变状态的textview
                         String content = (String) lastView.getTag();
-                        lastView.setText(addClickablePart(content, lastView));
+                        lastView.setText(addClickablePart(content, lastView, -1));
                     }
                     if (page <= 0) {
                         page = 1;//不再翻页
@@ -214,7 +215,7 @@ public class ReadingView extends LinearLayout {
         int result = 0;
         Rect bounds = new Rect();
         String text = "Hello";
-        TextView lineText = new TextView(getContext());
+        LocalTextView lineText = new LocalTextView(getContext());
         lineText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         lineText.setText(text);
         lineText.setLayoutParams(layoutParamsMW);
@@ -233,7 +234,7 @@ public class ReadingView extends LinearLayout {
     public int getTextHeight() {
         int result = 0;
         String text = "Hello";
-        TextView lineText = new TextView(getContext());
+        LocalTextView lineText = new LocalTextView(getContext());
         lineText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         lineText.setText(text);
         lineText.setLayoutParams(layoutParamsMW);
@@ -396,14 +397,14 @@ public class ReadingView extends LinearLayout {
         if (content.endsWith(" ")) {
             content = content.substring(0, content.length() - 1);
         }
-        TextView lineText = new TextView(getContext());
+        LocalTextView lineText = new LocalTextView(getContext());
         lineText.setMovementMethod(ClickableMovementMethod.getInstance());
         lineText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         lineText.setTextColor(textColor);
         if (justify) {
             justify(lineText, content, remainWidth);
         } else {//最后一行同样处理点击事件
-            lineText.setText(addClickablePart(content, lineText));
+            lineText.setText(addClickablePart(content, lineText, -1));
         }
         lineText.setLayoutParams(layoutParamsMW);
         avoidHintColor(lineText);
@@ -416,7 +417,7 @@ public class ReadingView extends LinearLayout {
      * description  添加段落间空串
      */
     private void addEmptyLine() {
-        TextView lineText = new TextView(getContext());
+        LocalTextView lineText = new LocalTextView(getContext());
         lineText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         lineText.setTextColor(textColor);
         lineText.setText(" ");
@@ -429,12 +430,12 @@ public class ReadingView extends LinearLayout {
      * cerate at 2017/9/29 上午12:14
      * description 单行文本左右对齐
      */
-    public void justify(TextView textView, String content, float contentWidth) {
+    public void justify(LocalTextView textView, String content, float contentWidth) {
         Paint paint = textView.getPaint();
         //需要插入的空格个数
         int totalSpacesToInsert = (int) ((contentWidth - paint.measureText(content)) / paint.measureText(" "));
         content = justifyLine(content, totalSpacesToInsert);
-        textView.setText(addClickablePart(content, textView));
+        textView.setText(addClickablePart(content, textView, -1));
     }
 
     //已填入最多单词数的一行，插入对应的空格数直到该行满
@@ -462,7 +463,7 @@ public class ReadingView extends LinearLayout {
      * cerate at 2017/9/29 上午12:36
      * description 单词点击
      */
-    private SpannableStringBuilder addClickablePart(String str, final TextView current) {
+    private SpannableStringBuilder addClickablePart(String str, final LocalTextView current, int begin) {
         current.setTag(str);//保存数据
         SpannableStringBuilder ssb = new SpannableStringBuilder(str);
         String[] words = str.split("\\s");
@@ -470,13 +471,19 @@ public class ReadingView extends LinearLayout {
             for (int i = 0; i < words.length; i++) {
                 final String word = words[i];
                 final int start = str.indexOf(word);
-                ssb.setSpan(new ClickableSpan() {
+                ssb.setSpan(new TouchableSpan(R.color.textColor, R.color.white, R.color.chosed) {
                     @Override
                     public void onClick(View widget) {
+                        if (null != widget) {//恢复被改变的数据
+                            LocalTextView textView = (LocalTextView) widget;
+                            int begin = (int) widget.getTag(R.id.buffer_begin);
+                            String content = textView.getText().toString();
+                            textView.setText(addClickablePart(content, textView, begin));
+                        }
                         //清除旧数据状态，添加到新数据
                         if (null != lastView && lastView != current) {
                             String content = (String) lastView.getTag();
-                            lastView.setText(addClickablePart(content, lastView));
+                            lastView.setText(addClickablePart(content, lastView, -1));
                         }
                         lastView = current;
                         if (null == listener) {
@@ -492,14 +499,23 @@ public class ReadingView extends LinearLayout {
                     }
 
                 }, start, start + word.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (start == begin) {
+                    BackgroundColorSpan backgroundColorSpan =
+                            new BackgroundColorSpan(getResources().getColor(R.color.chosed));
+                    ssb.setSpan(backgroundColorSpan, start,
+                            start + word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    ForegroundColorSpan foregroundColorSpan = new ForegroundColorSpan(getResources().getColor(R.color.white));
+                    ssb.setSpan(foregroundColorSpan, start, start + word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
             }
         }
         return ssb;
     }
 
+
     private void avoidHintColor(View view) {
-        if (view instanceof TextView)
-            ((TextView) view).setHighlightColor(getResources().getColor(R.color.chosed));
+        if (view instanceof LocalTextView)
+            ((LocalTextView) view).setHighlightColor(getResources().getColor(R.color.chosed));
     }
 
     private int dip2px(int dip) {
